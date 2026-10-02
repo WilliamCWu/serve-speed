@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101715">
+  <title>Serve Speed — Tennis video analysis</title>
+  <meta name="description" content="Estimate average tennis serve flight speed from your video. Automatic court calibration and ball tracking, processed on your device.">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml"><link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="header"><a class="brand" href="./" aria-label="Serve Speed home"><span class="brandmark" aria-hidden="true">S</span> SERVE SPEED</a><span class="header-note">VIDEO ANALYSIS <span class="version">BETA</span></span></header>
+  <main>
+    <div class="page-title"><div><p class="eyebrow">YOUR SERVE, MEASURED</p><h1>How fast was that?</h1><p class="intro">Portrait or landscape. Find each serve, confirm its frames, and measure even a partial court.</p></div><div class="unit-control" aria-label="Speed units"><button id="mph" class="active" aria-pressed="true">mph</button><button id="kmh" aria-pressed="false">km/h</button></div></div>
+    <div class="workspace">
+      <section class="video-panel" aria-label="Video workspace">
+        <div class="panel-heading"><span class="section-label">01 / YOUR VIDEO</span><span id="file-meta">30 or 60 fps · behind the baseline</span></div>
+        <div id="dropzone" class="video-stage">
+          <div id="upload-empty" class="upload-empty">
+            <div class="upload-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M16 22V6m-6 6 6-6 6 6M6 21v6h20v-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <h2>Bring your serve into focus.</h2><p>Drag a video here, or choose one from your device.</p><button class="primary choose-file">Choose video</button><p class="file-support">MP4 / MOV / WebM · up to 60 seconds, 250 MB</p>
+          </div>
+          <div id="player-wrap" class="player-wrap" hidden><video id="video" playsinline controls preload="auto"></video><canvas id="overlay" aria-label="Detected court and ball track overlay"></canvas></div>
+          <div id="analysis-cover" class="analysis-cover" hidden><div class="spinner"></div><strong id="phase">Reading video…</strong><span id="phase-detail">Keep this tab open while we analyze your clip.</span><progress id="progress" value="0" max="100" aria-label="Analysis progress"></progress><button id="cancel" class="text-button">Cancel analysis</button></div>
+        </div>
+        <div class="video-footer"><span class="privacy"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 9V6a5 5 0 0 1 10 0v3M4 9h12v9H4z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg> Your video stays on this device.</span><button id="replace" class="text-button choose-file" hidden>Change video</button></div>
+        <div id="frame-controls" class="frame-controls" hidden><button id="frame-back" class="secondary" aria-label="Previous video frame">−1 frame</button><button id="frame-next" class="secondary" aria-label="Next video frame">+1 frame</button><output id="playhead">0:00.000</output><label>Playback <select id="playback-rate"><option value="1">1×</option><option value=".5">0.5×</option><option value=".25">0.25×</option></select></label></div>
+        <div id="quick-timing" class="quick-timing" hidden><label>Shot <select id="video-shot" aria-label="Current shot"></select></label><button id="quick-contact" class="secondary">Set contact here</button><button id="quick-bounce" class="secondary">Set bounce here</button><button id="replay-shot" class="secondary">Replay shot</button><span id="quick-status"></span></div>
+        <div id="video-action" class="video-action" role="status" hidden></div>
+        <input id="file" type="file" accept="video/*,.mov,.mp4,.webm" hidden>
+        <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+      </section>
+      <aside class="results-panel" aria-label="Serve results">
+        <div class="panel-heading"><span class="section-label">02 / YOUR RESULTS</span><span id="result-status" class="pill">WAITING FOR VIDEO</span></div>
+        <div class="speed-summary"><p id="speed-label">FASTEST AVERAGE FLIGHT SPEED</p><div class="speed-value"><span id="top-speed">—</span><span class="speed-unit">mph</span></div><p id="speed-range">Upload a video to see your estimate.</p></div>
+        <div class="summary-divider"></div><div class="list-heading"><h2>Shots &amp; estimates</h2><span id="serve-count">00</span></div>
+        <div id="serve-list" class="serve-list"><div class="results-empty"><span class="empty-line"></span><p>Your serves will appear here.<br>Select one to review its ball track.</p></div></div>
+        <div class="result-note"><span class="note-icon">i</span><p>Average speed from contact to bounce. This will be lower than a radar gun’s speed at contact.</p></div>
+      </aside>
+    </div>
+    <section id="editor" class="editor" hidden aria-labelledby="editor-title">
+      <div class="editor-heading"><div><p class="eyebrow">MEASURE THIS CLIP</p><h2 id="editor-title">One video. Every serve.</h2></div><button id="auto-track" class="secondary">Try automatic tracking</button></div>
+      <p id="audio-note" class="helper" role="status">Looking for impact sounds…</p>
+      <canvas id="waveform" height="72" aria-label="Audio timeline; click to seek"></canvas>
+      <div class="shot-toolbar"><div id="shot-tabs" class="shot-tabs" aria-label="Shots in this clip"></div><button id="add-shot" class="secondary">Add shot</button></div>
+      <div class="manual-grid">
+        <section class="timing-card"><h3>1. Confirm the frames</h3><p class="helper">Find racket contact and the ball’s first bounce. Audio suggestions are starting points, not confirmed measurements.</p>
+          <div class="event-card"><div><strong>Racket contact</strong><output id="contact-time">Not confirmed</output></div><div><button id="go-contact" class="text-button">Go to</button><button id="mark-contact" class="secondary">Use current frame</button></div></div>
+          <div class="event-card"><div><strong>First bounce</strong><output id="bounce-time">Not confirmed</output></div><div><button id="go-bounce" class="text-button">Go to</button><button id="mark-bounce" class="secondary">Use current frame</button></div></div>
+          <label class="field">Contact height (m)<input id="contact-height" type="number" min="1" max="4" step=".1" value="2.7"></label><p class="helper small">Height of the ball when it meets the racket. 2.7 m is a starting assumption; adjust if known.</p>
+          <button id="remove-shot" class="text-button danger">Remove this shot</button>
+        </section>
+        <section class="position-card"><h3>2. Set the flight positions</h3>
+          <label class="field">Measurement method<select id="measure-mode"><option value="diagram">Court diagram · rough estimate</option><option value="calibrated">Visible court points · calibrated</option></select></label>
+          <p id="position-help" class="helper">Choose a marker, then tap the court diagram where the server and first bounce were. No full-court video is needed.</p>
+          <div class="marker-buttons"><button id="mark-origin" class="secondary active">Server ground position</button><button id="mark-landing" class="secondary">First bounce position</button></div>
+          <svg id="court-map" viewBox="0 0 250 510" role="img" aria-label="Court diagram, viewed from behind the near baseline"></svg>
+          <div class="coordinate-fields"><label>Server x (m)<input id="start-x" type="number" step=".1" placeholder="—"></label><label>Server y (m)<input id="start-y" type="number" step=".1" placeholder="—"></label><label>Bounce x (m)<input id="end-x" type="number" step=".1" placeholder="—"></label><label>Bounce y (m)<input id="end-y" type="number" step=".1" placeholder="—"></label></div>
+          <p class="helper small">Near baseline: y = 0. Far service line: y = 18.285 m. x = 0 is the center line.</p>
+        </section>
+        <section class="calibration-card"><h3 id="setup-title">3. Review the estimate</h3>
+          <div id="calibration-tools" hidden><p class="helper">Mark at least four known points in the paused video. Use any visible portion, spread across two or more court lines. Choose exact painted intersections or baseline center ticks.</p>
+            <label class="field">Visible point to mark<select id="landmark"></select></label><button id="add-landmark" class="secondary">Mark point in video</button><div id="anchor-list" class="anchor-list"></div><p id="calibration-note" class="helper" role="status"></p><div class="inline-actions"><button id="go-calibration" class="text-button">Go to calibration frame</button><button id="clear-anchors" class="text-button">Clear points</button></div><p class="helper small">Use one paused frame for all anchors. If the camera angle changes, calibrate that shot again or use the diagram method.</p><hr></div>
+          <label class="field">Position tolerance per marker (m)<input id="position-tolerance" type="number" min=".1" max="5" step=".1" value="1"></label>
+          <p class="helper small">Use a larger value when landing position is uncertain. The range varies both marked positions by this amount, timing by one frame, and height by 0.4 m.</p>
+          <div id="measurement-check" class="measurement-check" role="status">Confirm both frames and positions to calculate a speed.</div>
+          <p class="helper">The estimate updates as you edit. Diagram placement gives a rough estimate; calibration improves court distances but still depends on your clicks.</p>
+        </section>
+      </div>
+    </section>
+    <section class="recording-guide" aria-labelledby="guide-title"><div><p class="eyebrow">GIVE IT A CLEAR VIEW</p><h2 id="guide-title">A better clip.<br>A better estimate.</h2></div><div class="guide-item"><span>01</span><h3>Keep the camera still</h3><p>A fixed camera makes calibration reusable. For changing angles, use the diagram method or calibrate each shot separately.</p></div><div class="guide-item"><span>02</span><h3>Partial court is fine</h3><p>Portrait clips work with manual positions. For calibration, identify four visible court points across at least two lines.</p></div><div class="guide-item"><span>03</span><h3>Prefer 60 fps</h3><p>Use the original video with sound. 30 fps also works, with wider timing uncertainty. Avoid slow-motion exports.</p></div></section>
+    <details class="method"><summary>What does this estimate measure?<span aria-hidden="true">+</span></summary><div><p>The app divides the straight-line distance from contact to first bounce by video flight time, approximating average flight speed. Court-diagram positions are your estimates; calibrated positions come from four or more marked court points. The start position is the ground point beneath contact, not the airborne ball. Contact height is entered separately.</p><p>Audio transients suggest possible racket contacts so you can separate multiple shots. Practice bounces, voices, other courts, and echoes can produce false suggestions. Always confirm contact and bounce visually. Audio times are not used directly for speed, avoiding sound-travel delay in the measurement.</p><p>The displayed range is a sensitivity band for your stated position tolerance, one frame of timing variation, and 0.4 m of contact-height variation. It is not a validated confidence interval and does not cover every calibration or lens error. This measures neither spin nor radar speed at impact; accuracy has not been validated against radar.</p></div></details>
+  </main>
+  <footer><span>SERVE SPEED</span><span>Built for the practice court.</span></footer>
+  <script type="module" src="./app.js"></script>
+</body></html>
