@@ -48,3 +48,19 @@ for(const id of ['nscl','nsc','fsc','fscr']){$('landmark').value=id;await $('add
 assert.match($('calibration-note').textContent,/4 points mapped/);await $('mark-origin').onclick();clickVideo(project(H,-1,0));await $('mark-landing').onclick();clickVideo(project(H,1,17));assert.match($('result-status').textContent,/2 MEASURED \/ 3 SHOTS/);assert.equal($('start-x').disabled,true);assert.match($('measurement-check').textContent,/court overlay/);
 await $('replay-shot').onclick();assert.equal(video.paused,false);video.currentTime=20;await new Promise(r=>setTimeout(r,0));assert.equal(video.paused,true,'shot replay should stop at its segment boundary');
 console.log('PASS: uploaded portrait clip reaches manual editor, three shots are suggested, contact/bounce confirmation works, coordinate entry generates a result, units convert, and shot data stays independent.');
+
+if(process.env.TEST_VARIABLE_VIDEO){
+ const raw=fs.readFileSync(process.env.TEST_VARIABLE_VIDEO),{readVideoMetadata}=await import('../dist/media.js'),meta=await readVideoMetadata(new File([raw],'original.mov'));
+ video.duration=meta.duration;video.videoWidth=128;video.videoHeight=128;
+ globalThis.AudioContext=class{async decodeAudioData(){return {length:22050,numberOfChannels:1,sampleRate:22050,getChannelData:()=>new Float32Array(22050)};}async close(){}};
+ $('file').files=[new File([raw],'original.mov',{type:'video/quicktime'})];$('file').onchange();
+ for(let i=0;i<100&&!$('file-meta').textContent.includes('variable');i++)await new Promise(r=>setTimeout(r,10));
+ for(let i=0;i<100&&$('analysis-cover').hidden===false;i++)await new Promise(r=>setTimeout(r,10));
+ assert.equal($('editor').hidden,false);assert.match($('file-meta').textContent,/variable.*HEVC/);assert.match($('timing-note').textContent,/Original frame timing preserved/);assert.equal($('auto-track').disabled,true);
+ video.currentTime=.405;await new Promise(r=>setTimeout(r,0));$('quick-contact').onclick();assert.match($('contact-time').textContent,/0\.400/);
+ video.currentTime=1.051;await new Promise(r=>setTimeout(r,0));$('quick-bounce').onclick();assert.match($('bounce-time').textContent,/1\.033/);
+ await $('frame-next').onclick();assert.match($('playhead').textContent,/1\.067/);await $('frame-back').onclick();assert.match($('playhead').textContent,/1\.033/);
+ $('start-x').value='0';$('start-x').onchange();$('start-y').value='0';$('start-y').onchange();$('end-x').value='0';$('end-x').onchange();$('end-y').value='17';$('end-y').onchange();
+ const expected=Math.round(Math.hypot(17,2.7)/(1+1/30-.4)*3.6);assert.equal(Number($('top-speed').textContent),expected);assert.match($('result-status').textContent,/1 MEASURED/);
+ console.log('PASS: HEVC variable-rate clip opens in manual editor; stepping and contact/bounce use actual presentation timestamps, and the speed uses their elapsed time.');
+}

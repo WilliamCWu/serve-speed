@@ -13,7 +13,7 @@
     <div class="page-title"><div><p class="eyebrow">YOUR SERVE, MEASURED</p><h1>How fast was that?</h1><p class="intro">Portrait or landscape. Find each serve, confirm its frames, and measure even a partial court.</p></div><div class="unit-control" aria-label="Speed units"><button id="mph" class="active" aria-pressed="true">mph</button><button id="kmh" aria-pressed="false">km/h</button></div></div>
     <div class="workspace">
       <section class="video-panel" aria-label="Video workspace">
-        <div class="panel-heading"><span class="section-label">01 / YOUR VIDEO</span><span id="file-meta">30 or 60 fps · behind the baseline</span></div>
+        <div class="panel-heading"><span class="section-label">01 / YOUR VIDEO</span><span id="file-meta">Original phone video · behind the baseline</span></div>
         <div id="dropzone" class="video-stage">
           <div id="upload-empty" class="upload-empty">
             <div class="upload-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M16 22V6m-6 6 6-6 6 6M6 21v6h20v-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
@@ -24,6 +24,7 @@
         </div>
         <div class="video-footer"><span class="privacy"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M5 9V6a5 5 0 0 1 10 0v3M4 9h12v9H4z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg> Your video stays on this device.</span><button id="replace" class="text-button choose-file" hidden>Change video</button></div>
         <div id="frame-controls" class="frame-controls" hidden><button id="frame-back" class="secondary" aria-label="Previous video frame">−1 frame</button><button id="frame-next" class="secondary" aria-label="Next video frame">+1 frame</button><output id="playhead">0:00.000</output><label>Playback <select id="playback-rate"><option value="1">1×</option><option value=".5">0.5×</option><option value=".25">0.25×</option></select></label></div>
+        <p id="timing-note" class="helper small" role="status"></p>
         <div id="quick-timing" class="quick-timing" hidden><label>Shot <select id="video-shot" aria-label="Current shot"></select></label><button id="quick-contact" class="secondary">Set contact here</button><button id="quick-bounce" class="secondary">Set bounce here</button><button id="replay-shot" class="secondary">Replay shot</button><span id="quick-status"></span></div>
         <div id="video-action" class="video-action" role="status" hidden></div>
         <input id="file" type="file" accept="video/*,.mov,.mp4,.webm" hidden>
@@ -67,9 +68,9 @@
         </section>
       </div>
     </section>
-    <section class="recording-guide" aria-labelledby="guide-title"><div><p class="eyebrow">GIVE IT A CLEAR VIEW</p><h2 id="guide-title">A better clip.<br>A better estimate.</h2></div><div class="guide-item"><span>01</span><h3>Keep the camera still</h3><p>A fixed camera makes calibration reusable. For changing angles, use the diagram method or calibrate each shot separately.</p></div><div class="guide-item"><span>02</span><h3>Partial court is fine</h3><p>Portrait clips work with manual positions. For calibration, identify four visible court points across at least two lines.</p></div><div class="guide-item"><span>03</span><h3>Prefer 60 fps</h3><p>Use the original video with sound. 30 fps also works, with wider timing uncertainty. Avoid slow-motion exports.</p></div></section>
+    <section class="recording-guide" aria-labelledby="guide-title"><div><p class="eyebrow">GIVE IT A CLEAR VIEW</p><h2 id="guide-title">A better clip.<br>A better estimate.</h2></div><div class="guide-item"><span>01</span><h3>Keep the camera still</h3><p>A fixed camera makes calibration reusable. For changing angles, use the diagram method or calibrate each shot separately.</p></div><div class="guide-item"><span>02</span><h3>Partial court is fine</h3><p>Portrait clips work with manual positions. For calibration, identify four visible court points across at least two lines.</p></div><div class="guide-item"><span>03</span><h3>Prefer 60 fps</h3><p>Use the original video with sound. 30 fps and variable-rate phone recordings also work. Use real-time footage; avoid slow-motion exports.</p></div></section>
     <details class="method"><summary>What does this estimate measure?<span aria-hidden="true">+</span></summary><div><p>The app divides the straight-line distance from contact to first bounce by video flight time, approximating average flight speed. Court-diagram positions are your estimates; calibrated positions come from four or more marked court points. The start position is the ground point beneath contact, not the airborne ball. Contact height is entered separately.</p><p>Audio transients suggest possible racket contacts so you can separate multiple shots. Practice bounces, voices, other courts, and echoes can produce false suggestions. Always confirm contact and bounce visually. Audio times are not used directly for speed, avoiding sound-travel delay in the measurement.</p><p>The displayed range is a sensitivity band for your stated position tolerance, one frame of timing variation, and 0.4 m of contact-height variation. It is not a validated confidence interval and does not cover every calibration or lens error. This measures neither spin nor radar speed at impact; accuracy has not been validated against radar.</p></div></details>
   </main>
   <footer><span>SERVE SPEED</span><span>Built for the practice court.</span></footer>
-  <script type="module" src="./app.js"></script>
+  <script type="module" src="./app.js?v=2"></script>
 </body></html>

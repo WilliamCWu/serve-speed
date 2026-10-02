@@ -26,17 +26,18 @@ export function fitManualCourt(anchors,w,h){
  if(ds.some(d=>d<=.015))return {error:'The court projection crosses the playing area. Check the landmark labels.'};
  return {H,inv,w,h,reprojection:error,coverage:hullArea(world.map(p=>p.slice(2)))/(10.97*23.77)};
 }
-export function estimateManual({contact,bounceTime,start,end,height=2.7,fps=30,tolerance=1}){
+export function estimateManual({contact,bounceTime,start,end,height=2.7,fps=30,tolerance=1,timingError=1/fps}){
  if(!Number.isFinite(contact)||!Number.isFinite(bounceTime))return {error:'Confirm the contact frame and first-bounce frame.'};
  const dt=bounceTime-contact;if(dt<=.12||dt>2.5)return {error:'Bounce must be after contact, with a flight between 0.12 and 2.5 seconds.'};
  if(!start||!end)return {error:'Mark the server’s ground position and the first bounce position.'};
- if(![...start,...end,height,fps,tolerance].every(Number.isFinite)||height<1||height>4||fps<10||tolerance<0)return {error:'Check contact height, positions, and video frame rate.'};
+ if(![...start,...end,height,fps,tolerance,timingError].every(Number.isFinite)||height<1||height>4||fps<10||tolerance<0||timingError<=0)return {error:'Check contact height, positions, and video frame rate.'};
  if(Math.abs(start[0])>8||start[1]<-4||start[1]>27||Math.abs(end[0])>8||end[1]<-4||end[1]>27)return {error:'A mapped position falls far outside the court. Check the calibration or use the court diagram.'};
  const horizontal=Math.hypot(end[0]-start[0],end[1]-start[1]);if(horizontal<3)return {error:'The marked flight is too short for a serve. Check the position markers.'};
- const distance=Math.hypot(horizontal,height),speed=distance/dt,timing=1/fps;
+ if(dt<=timingError)return {error:'The selected frames are too widely spaced for this flight. Choose a clearer recording with more frames.'};
+ const distance=Math.hypot(horizontal,height),speed=distance/dt,timing=timingError;
  const lo=Math.hypot(Math.max(0,horizontal-2*tolerance),Math.max(1,height-.4))/(dt+timing);
  const hi=Math.hypot(horizontal+2*tolerance,height+.4)/(dt-timing);
- return {speed,lo,hi,distance,flightTime:dt,contact,bounceTime,origin:start,bounce:end,manual:true,points:Math.round(dt*fps),tolerance};
+ return {speed,lo,hi,distance,flightTime:dt,contact,bounceTime,origin:start,bounce:end,manual:true,points:Math.round(dt*fps),tolerance,timingError};
 }
 
 const median=x=>{const p=[...x].sort((a,b)=>a-b);return p[Math.floor(p.length/2)]??0;};

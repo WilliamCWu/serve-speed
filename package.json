@@ -1,1 +1,1 @@
-{"name":"serve-speed","private":true,"type":"module","scripts":{"test":"node tests/engine.test.mjs && node tests/manual.test.mjs"}}
+{"name":"serve-speed","private":true,"type":"module","scripts":{"test":"node tests/engine.test.mjs && node tests/manual.test.mjs && node tests/media.test.mjs"}}

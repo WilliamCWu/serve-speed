@@ -1,4 +1,4 @@
-import {seekFrame} from './media.js';
+import {seekFrame} from './media.js?v=2';
 export async function runAutomatic(video,fps,signal,progress){
  const worker=new Worker(new URL('./worker.js',import.meta.url),{type:'module'});let id=0;
  const call=(data,transfer=[])=>new Promise((resolve,reject)=>{const n=++id;let timer;const clean=()=>{clearTimeout(timer);worker.removeEventListener('message',receive);worker.removeEventListener('error',fail);signal.removeEventListener('abort',cancel);};const cancel=()=>{clean();reject(new DOMException('Cancelled','AbortError'));};const fail=()=>{clean();reject(new Error('Automatic tracking could not run. You can still measure manually.'));};const receive=e=>{if(e.data.id!==n)return;clean();e.data.error?reject(new Error(e.data.error)):resolve(e.data);};if(signal.aborted){cancel();return;}worker.addEventListener('message',receive);worker.addEventListener('error',fail);signal.addEventListener('abort',cancel,{once:true});timer=setTimeout(fail,45000);worker.postMessage({...data,id:n},transfer);});
